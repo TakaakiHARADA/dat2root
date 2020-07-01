@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
     std::stringstream ssdat, ssroot;
     ssdat << "./datfile/" << argv[1] << ".dat";
     ssroot << "./rootfile/" << argv[1] << ".root";
-    TString datFileName = ssdat.str();
+    std::string datFileName = ssdat.str();
     auto rootFileName = ssroot.str().c_str();
     std::ifstream ifs(datFileName);
     auto outfile = new TFile(rootFileName, "recreate");
