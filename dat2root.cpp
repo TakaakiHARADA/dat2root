@@ -25,9 +25,9 @@ int main(int argc, char *argv[])
 
     std::stringstream ssdat, ssroot;
     ssdat << "./datfile/" << argv[1] << ".dat";
-    ssroot << "./rootfile" << argv[1] << ".root";
+    ssroot << "./rootfile/" << argv[1] << ".root";
     TString datFileName = ssdat.str();
-    TString rootFileName = ssroot.str();
+    auto rootFileName = ssroot.str().c_str();
     std::ifstream ifs(datFileName);
     auto outfile = new TFile(rootFileName, "recreate");
 
@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
     std::vector<int> TDCHit;
     std::vector<int> SCALER;
     std::vector<int> CoinReg;
-    std::vector<Double_t> ADCkeV;
+    std::vector<double> ADCkeV;
     std::vector<std::string> HitList;
     tree->Branch("ADC", &ADC);
     tree->Branch("TDC", &TDC);
@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
     }
 
     // TTreeに値を詰める
-    int word, wordCounter, i = 0;
+    int word, wordCounter = 0, i = 0;
     while (ifs >> word)
     {
         wordCounter++;
@@ -118,11 +118,11 @@ int main(int argc, char *argv[])
 
             wordCounter = 0;
 
-            i++;
             if (i % 100000 == 0)
             {
                 printf("Event: %d\n", i);
             }
+            i++;
 
             tree->Fill();
             ADC.clear();
