@@ -1,3 +1,4 @@
 *.o
 /datfile/*.dat
 /rootfile/*.root
+/dat2root
