@@ -1,6 +1,6 @@
 TARGET = dat2root
 
-SRCS = $(TARGET).cc
+SRCS = $(TARGET).cpp
 OBJS = $(TARGET).o
 
 ROOTCFLAGS = $(shell root-config --cflags)
@@ -14,7 +14,7 @@ CXX = g++
 $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(CXXLIBS) $(OBJS) -o $@
 
-.cc.o:
+.cpp.o:
 	$(CXX) $(CXXFLAGS) -c $<
 
 clean:
