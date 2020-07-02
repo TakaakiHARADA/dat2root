@@ -23,13 +23,11 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    std::stringstream ssdat, ssroot;
-    ssdat << "./datfile/" << argv[1] << ".dat";
-    ssroot << "./rootfile/" << argv[1] << ".root";
-    std::string datFileName = ssdat.str();
-    auto rootFileName = ssroot.str().c_str();
-    std::ifstream ifs(datFileName);
-    auto outfile = new TFile(rootFileName, "recreate");
+    std::stringstream datFileName, rootFileName;
+    datFileName << "./datfile/" << argv[1] << ".dat";
+    rootFileName << "./rootfile/" << argv[1] << ".root";
+    auto outfile = new TFile(rootFileName.str().c_str(), "recreate"); // TFileにはconst char*を食わせないといけない
+    std::ifstream ifs(datFileName.str());                             // ifstreamはstringでもOK
 
     // TTree作成
     TTree *tree = new TTree("tree", "converted tree");
@@ -39,14 +37,12 @@ int main(int argc, char *argv[])
     std::vector<int> SCALER;
     std::vector<int> CoinReg;
     std::vector<double> ADCkeV;
-    std::vector<std::string> HitList;
     tree->Branch("ADC", &ADC);
     tree->Branch("TDC", &TDC);
     tree->Branch("TDCHit", &TDCHit);
     tree->Branch("SCALER", &SCALER);
     tree->Branch("CoinReg", &CoinReg);
     tree->Branch("ADCkeV", &ADCkeV);
-    tree->Branch("HitList", &HitList);
 
     // ch->keVの変換関数を用意する
     TF1 *ch2keV[30];
@@ -137,5 +133,6 @@ int main(int argc, char *argv[])
     // 書き出し
     tree->Write();
     outfile->Close();
+
     return 0;
 }
