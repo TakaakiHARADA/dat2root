@@ -71,11 +71,6 @@ int main(int argc, char *argv[])
         {
             CoinReg.push_back(word);
         }
-        // 31, 32はCoinReg
-        if (wordCounter >= 31 && wordCounter <= 32)
-        {
-            CoinReg.push_back(word);
-        }
         // 次の24個はTDC
         if (wordCounter >= 33 && wordCounter <= 56)
         {
@@ -120,6 +115,13 @@ int main(int argc, char *argv[])
             }
             i++;
 
+            // std::cout << ADC << std::endl;
+            // std::cout << CoinReg << std::endl;
+            // std::cout << TDC << std::endl;
+            // std::cout << TDCHit << std::endl;
+            // std::cout << SCALER << std::endl;
+            // std::cout << ADCkeV << std::endl;
+
             tree->Fill();
             ADC.clear();
             TDC.clear();
@@ -131,7 +133,7 @@ int main(int argc, char *argv[])
     }
 
     // 書き出し
-    tree->Write();
+    outfile->Write();
     outfile->Close();
 
     return 0;
