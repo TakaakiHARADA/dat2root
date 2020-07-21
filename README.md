@@ -1,3 +1,12 @@
 # dat2root
 datfileをrootfileに直すプログラム。
-ついでにSI.datから傾きと切片を読み込んでADCch→エネルギー(keV)へ変換した値も詰めてくれる。
+
+## 使い方
+datfileっていうディレクトリにdatファイルを入れる。
+コマンドライン引数でhogeを入れるとhoge.datからhoge.rootを作ってくれる。
+できたrootfileはrootfileっていうディレクトリに入る。
+
+ついでにSI.datから傾きと切片を読み込んでADC(ch)→エネルギー(keV)へ変換した値も詰めてくれる。
+
+## 追記
+LiveTimeCalc.pyっていうLivetimeを出してくれるpythonスクリプトもあるよ！
