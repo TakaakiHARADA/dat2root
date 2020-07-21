@@ -1,7 +1,6 @@
-# 2/5に新しいscalerに替えたあとの問題に対応済み
-
 from copy import copy
 import datetime
+import os
 
 
 def reader(myfile):
@@ -30,6 +29,15 @@ def isCleared(oldnum: int, newnum: int):
     return (oldnum > newnum)
 
 
+filename = input("対象ファイル名を入力（拡張子含む）：")
+filepath = os.getcwd() + "/datfile/" + filename
+existing = os.path.exists(filepath)
+
+if not existing:
+    print(f"ファイル: {filepath} は存在しません")
+    exit()
+
+
 ms = 0.001
 count = 1 * ms
 counter = [0, 0, 0, 0]
@@ -38,9 +46,8 @@ counter = [0, 0, 0, 0]
 Scaler_old = [0]*10
 Scaler_new = [0]*10
 
-filename = input("対象ファイル名を入力（拡張子含む）：")
-f = open("/Users/harada/Desktop/dat2root/datfile/" +
-         filename, "r")  # ホームディレクトリは適宜書き換えてください
+
+f = open(filepath, "r")
 while True:
     try:
         Scaler_old = copy(Scaler_new)
