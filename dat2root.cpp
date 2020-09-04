@@ -13,6 +13,10 @@
 #include <vector>
 #include <string>
 #include <random>
+#include <iterator>
+
+int delta(const int l, const int m, const int L, const int M);
+std::vector<int> delta(const std::vector<int> &oldSCALER, const std::vector<int> &currentSCALER);
 
 int main(int argc, char *argv[])
 {
@@ -35,14 +39,17 @@ int main(int argc, char *argv[])
     std::vector<int> TDC;
     std::vector<int> TDCHit;
     std::vector<int> SCALER;
+    std::vector<int> memoSCALER(10, 0); // [0]*10
     std::vector<int> CoinReg;
-    std::vector<double> ADCkeV;
+    std::vector<double> ADCkeV; // キャリブレーションで得られたエネルギー(keV)
+    std::vector<int> DELTA;     // scalerの増分。int5個。
     tree->Branch("ADC", &ADC);
     tree->Branch("TDC", &TDC);
     tree->Branch("TDCHit", &TDCHit);
     tree->Branch("SCALER", &SCALER);
     tree->Branch("CoinReg", &CoinReg);
     tree->Branch("ADCkeV", &ADCkeV);
+    tree->Branch("DELTA", &DELTA);
 
     // ch->keVの変換関数を用意する
     TF1 *ch2keV[30];
@@ -57,7 +64,7 @@ int main(int argc, char *argv[])
     }
 
     // TTreeに値を詰める
-    int word, wordCounter = 0, i = 0;
+    int word, wordCounter = 0, entryCounter = 0;
     while (ifs >> word)
     {
         wordCounter++;
@@ -107,28 +114,30 @@ int main(int argc, char *argv[])
                 ADCkeV.push_back(keV);
             }
 
+            // 空のDELTAに中身を入れる
+            DELTA = delta(memoSCALER, SCALER);
+
+            // ワードカウンタのリセット
             wordCounter = 0;
 
-            if (i % 100000 == 0)
+            // 進捗表示
+            if (entryCounter % 100000 == 0)
             {
-                printf("Event: %d\n", i);
+                printf("Event: %d\n", entryCounter);
             }
-            i++;
+            entryCounter++;
 
-            // std::cout << ADC << std::endl;
-            // std::cout << CoinReg << std::endl;
-            // std::cout << TDC << std::endl;
-            // std::cout << TDCHit << std::endl;
-            // std::cout << SCALER << std::endl;
-            // std::cout << ADCkeV << std::endl;
-
+            // 各ループの終了処理
             tree->Fill();
             ADC.clear();
             TDC.clear();
             TDCHit.clear();
-            SCALER.clear();
             CoinReg.clear();
             ADCkeV.clear();
+            memoSCALER.clear();                                                      // memoSCALERの全要素を削除して、
+            std::copy(SCALER.begin(), SCALER.end(), std::back_inserter(memoSCALER)); // SCALERから値をコピーしてくる。
+            SCALER.clear();
+            DELTA.clear();
         }
     }
 
@@ -137,4 +146,38 @@ int main(int argc, char *argv[])
     outfile->Close();
 
     return 0;
+}
+
+int delta(const int l, const int m, const int L, const int M)
+{
+    bool cleared = (m > M); // 上位ビットが減ったときにclearとみなす（たぶんコレで大丈夫のはず）
+    if (cleared)
+    {
+        return (L - l) + 65536;
+    }
+    else
+    {
+        return (L - l) + 65536 * (M - m);
+    }
+}
+
+std::vector<int> delta(const std::vector<int> &oldSCALER, const std::vector<int> &currentSCALER)
+{
+    // if (currentSCALER.size() % 2 == 1)
+    // {
+    //     std::cout << "エラー：SCALERの長さが奇数です！" << std::endl;
+    // }
+
+    std::vector<int> ret;
+
+    for (int i = 0; i < 5; ++i)
+    {
+        int l = oldSCALER.at(2 * i);
+        int m = oldSCALER.at(2 * i + 1);
+        int L = currentSCALER.at(2 * i);
+        int M = currentSCALER.at(2 * i + 1);
+        ret.push_back(delta(l, m, L, M));
+    }
+
+    return ret;
 }
