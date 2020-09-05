@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
             ADCkeV.clear();
             memoSCALER.clear();                                                      // memoSCALERの全要素を削除して、
             std::copy(SCALER.begin(), SCALER.end(), std::back_inserter(memoSCALER)); // SCALERから値をコピーしてくる。
-            SCALER.clear();
+            SCALER.clear(); // memoSCALERにコピーしてからclearすること！
             DELTA.clear();
         }
     }
