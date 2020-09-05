@@ -25,8 +25,22 @@ def reader(myfile):
     return ret
 
 
-def isCleared(oldnum: int, newnum: int):
-    return (oldnum > newnum)
+def DeltaCleared(l, m, L, M):
+    """
+    @input:
+    l,m: 1つ前のイベントのscaler下位ビット, 上位ビット
+    L,M: 現在のイベントのscaler下位ビット, 上位ビット
+    @output:
+    delta: scalerの増分値(int)
+    cleared: scalerがclearされたかどうかを表すbool
+    """
+    cleared = (m > M)
+    if not cleared:
+        delta = (L - l) + 65536 * (M - m)
+        return (delta, cleared)
+    else:
+        delta = (L - l) + 65536  # M = m+1 を仮定（たぶん妥当）
+        return (delta, cleared)
 
 
 filename = input("対象ファイル名を入力（拡張子含む）：")
@@ -39,8 +53,8 @@ if not existing:
 
 
 ms = 0.001
-count = 1 * ms
-counter = [0, 0, 0, 0]
+count = 1 * ms  # 今のところ、1~4chはクロック数=1kHz
+counter = [0, 0, 0, 0, 0]
 
 
 Scaler_old = [0]*10
@@ -52,28 +66,22 @@ while True:
     try:
         Scaler_old = copy(Scaler_new)
         Scaler_new = reader(f)
-        # clearがかかるのは3chだけかと思ったがそんなことはなかった
-        bools = [isCleared(Scaler_old[i]+Scaler_old[i+1]*(2 ** 16),
-                           Scaler_new[i]+Scaler_new[i+1]*(2 ** 16)) for i in [0, 2, 4, 6, 8]]
-        if any(bools):
-            print("Cleared!!")
-            # print(Scaler_old)
-            # print(Scaler_new)
-            # print("\n")
-            counter[0] += Scaler_old[0] + Scaler_old[1] * (2 ** 16)
-            counter[1] += Scaler_old[2] + Scaler_old[3] * (2 ** 16)
-            counter[2] += Scaler_old[4] + Scaler_old[5] * (2 ** 16)
-            counter[3] += Scaler_old[6] + Scaler_old[7] * (2 ** 16)
+        Delta = []  # int*5
+        Cleared = []  # bool*5
+        for i in range(5):
+            l, m = Scaler_old[2 * i], Scaler_old[2 * i + 1]
+            L, M = Scaler_new[2 * i], Scaler_new[2 * i + 1]
+            delta, cleared = DeltaCleared(l, m, L, M)
+            Delta.append(delta)
+            Cleared.append(cleared)
 
-            counter[0] -= Scaler_new[0] + Scaler_new[1] * (2 ** 16)
-            counter[1] -= Scaler_new[2] + Scaler_new[3] * (2 ** 16)
-            counter[2] -= Scaler_new[4] + Scaler_new[5] * (2 ** 16)
-            counter[3] -= Scaler_new[6] + Scaler_new[7] * (2 ** 16)
+        if any(Cleared):
+            print("Cleared!!")
+
+        for i in range(5):
+            counter[i] += Delta[i]
+
     except ValueError:
-        counter[0] += Scaler_old[0] + Scaler_old[1] * (2 ** 16)
-        counter[1] += Scaler_old[2] + Scaler_old[3] * (2 ** 16)
-        counter[2] += Scaler_old[4] + Scaler_old[5] * (2 ** 16)
-        counter[3] += Scaler_old[6] + Scaler_old[7] * (2 ** 16)
         break
 
 
@@ -88,8 +96,6 @@ if filename == 'shieldedBGwoGN2_20200207.dat':
                               hour=18, minute=26, second=5)
     stop = datetime.datetime(year=2020, month=2, day=9,
                              hour=23, minute=33, second=52)
-
-# seconds = (stop - start).total_seconds()
 
 RealTime = counter[0] * count
 DeadTime = counter[1] * count

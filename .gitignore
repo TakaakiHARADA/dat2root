@@ -12,3 +12,7 @@ rootfile/teidenADC26.pdf
 rootfile/teidenADC27.pdf
 rootfile/teidenADC29.pdf
 rootfile/teidenADC30.pdf
+.vscode/c_cpp_properties.json
+.vscode/settings.json
+.vscode/.ropeproject/config.py
+.vscode/.ropeproject/objectdb
