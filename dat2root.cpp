@@ -17,6 +17,7 @@
 
 int delta(const int l, const int m, const int L, const int M);
 std::vector<int> delta(const std::vector<int> &oldSCALER, const std::vector<int> &currentSCALER);
+std::vector<int> CR(int CR1, int CR2);
 
 int main(int argc, char *argv[])
 {
@@ -43,6 +44,7 @@ int main(int argc, char *argv[])
     std::vector<int> CoinReg;
     std::vector<double> ADCkeV; // キャリブレーションで得られたエネルギー(keV)
     std::vector<int> DELTA;     // scalerの増分。int5個。
+    int nHit;                   // HitしたCsIの数
     tree->Branch("ADC", &ADC);
     tree->Branch("TDC", &TDC);
     tree->Branch("TDCHit", &TDCHit);
@@ -50,6 +52,7 @@ int main(int argc, char *argv[])
     tree->Branch("CoinReg", &CoinReg);
     tree->Branch("ADCkeV", &ADCkeV);
     tree->Branch("DELTA", &DELTA);
+    tree->Branch("nHit", &nHit);
 
     // ch->keVの変換関数を用意する
     TF1 *ch2keV[30];
@@ -68,36 +71,49 @@ int main(int argc, char *argv[])
     while (ifs >> word)
     {
         wordCounter++;
+        int CR1, CR2;
+
         // 最初の30個はADC
         if (wordCounter >= 1 && wordCounter <= 30)
         {
             ADC.push_back(word);
         }
+
         // 31, 32はCoinReg
-        if (wordCounter >= 31 && wordCounter <= 32)
+        if (wordCounter == 31)
         {
-            CoinReg.push_back(word);
+            CR1 = word;
         }
+        if (wordCounter == 32)
+        {
+            CR2 = word;
+        }
+        CoinReg = CR(CR1, CR2);
+
         // 次の24個はTDC
         if (wordCounter >= 33 && wordCounter <= 56)
         {
             TDC.push_back(word);
         }
+
         // なぜか途中にTDCHitというのが挟まっている
         if (wordCounter == 57)
         {
             TDCHit.push_back(word);
         }
+
         // 6個TDC
         if (wordCounter >= 58 && wordCounter <= 63)
         {
             TDC.push_back(word);
         }
+
         // 10個Scaler
         if (wordCounter >= 64 && wordCounter <= 73)
         {
             SCALER.push_back(word);
         }
+
         // 1 Event = 73 wordsでリセット
         if (wordCounter == 73)
         {
@@ -116,6 +132,9 @@ int main(int argc, char *argv[])
 
             // 空のDELTAに中身を入れる
             DELTA = delta(memoSCALER, SCALER);
+
+            // nHit
+            nHit = std::count(CoinReg.begin(), CoinReg.end(), 1);
 
             // ワードカウンタのリセット
             wordCounter = 0;
@@ -136,7 +155,7 @@ int main(int argc, char *argv[])
             ADCkeV.clear();
             memoSCALER.clear();                                                      // memoSCALERの全要素を削除して、
             std::copy(SCALER.begin(), SCALER.end(), std::back_inserter(memoSCALER)); // SCALERから値をコピーしてくる。
-            SCALER.clear(); // memoSCALERにコピーしてからclearすること！
+            SCALER.clear();                                                          // memoSCALERにコピーしてからclearすること！
             DELTA.clear();
         }
     }
@@ -179,5 +198,21 @@ std::vector<int> delta(const std::vector<int> &oldSCALER, const std::vector<int>
         ret.push_back(delta(l, m, L, M));
     }
 
+    return ret;
+}
+
+std::vector<int> CR(int CR1, int CR2)
+{
+    std::vector<int> ret;
+    for (int i = 0; i < 16; ++i)
+    {
+        ret.push_back(CR1 && 1);
+        CR1 = CR1 >> 1;
+    }
+    for (int i = 0; i < 14; ++i)
+    {
+        ret.push_back(CR2 && 1);
+        CR2 = CR2 >> 1;
+    }
     return ret;
 }
