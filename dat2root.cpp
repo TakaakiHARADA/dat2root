@@ -206,12 +206,12 @@ std::vector<int> CR(int CR1, int CR2)
     std::vector<int> ret;
     for (int i = 0; i < 16; ++i)
     {
-        ret.push_back(CR1 && 1);
+        ret.push_back(CR1 & 1);
         CR1 = CR1 >> 1;
     }
     for (int i = 0; i < 14; ++i)
     {
-        ret.push_back(CR2 && 1);
+        ret.push_back(CR2 & 1);
         CR2 = CR2 >> 1;
     }
     return ret;
