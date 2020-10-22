@@ -9,5 +9,6 @@ datfileっていうディレクトリにdatファイルを入れる。
 ついでにSI.datから傾きと切片を読み込んでADC(ch)→エネルギー(keV)へ変換した値も詰めてくれる。
 
 ## 追記
-LiveTimeCalc.pyっていうLivetimeを出してくれるpythonスクリプトもあるよ！
+
+~~LiveTimeCalc.pyっていうLivetimeを出してくれるpythonスクリプトもあるよ！~~
 →dat2rootに前イベントからのscaler増分のブランチを追加したので無用
