@@ -10,9 +10,13 @@ datfileっていうディレクトリにdatファイルを入れる。
 
 ## scalerについて
 2020年10月22日現在の設定では、scaler 1~4Chは 1 count = 1 ms, 5chは 1 count = 10 us
+
 1ch : Required
+
 2ch : Acquired
+
 3,4ch : 無用
+
 5ch : 宇宙線μの反同時計測のためのプラシン
 
 ## 追記
