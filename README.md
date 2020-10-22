@@ -10,3 +10,4 @@ datfileっていうディレクトリにdatファイルを入れる。
 
 ## 追記
 LiveTimeCalc.pyっていうLivetimeを出してくれるpythonスクリプトもあるよ！
+→dat2rootに前イベントからのscaler増分のブランチを追加したので無用
