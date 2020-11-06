@@ -10,6 +10,7 @@
 #include <TString.h>
 #include <TStyle.h>
 #include <TF1.h>
+#include <TParameter.h>
 #include <vector>
 #include <string>
 #include <random>
@@ -42,9 +43,10 @@ int main(int argc, char *argv[])
     std::vector<int> SCALER;
     std::vector<int> memoSCALER(10, 0); // [0]*10
     std::vector<int> CoinReg;
-    std::vector<double> ADCkeV; // キャリブレーションで得られたエネルギー(keV)
-    std::vector<int> DELTA;     // scalerの増分。int5個。
-    int nHit;                   // HitしたCsIの数
+    std::vector<double> ADCkeV;        // キャリブレーションで得られたエネルギー(keV)
+    std::vector<int> DELTA;            // scalerの増分。int5個。
+    int nHit;                          // HitしたCsIの数
+    std::vector<Long64_t> ACCUM(4, 0); // DELTAの積分
     tree->Branch("ADC", &ADC);
     tree->Branch("TDC", &TDC);
     tree->Branch("TDCHit", &TDCHit);
@@ -53,6 +55,10 @@ int main(int argc, char *argv[])
     tree->Branch("ADCkeV", &ADCkeV);
     tree->Branch("DELTA", &DELTA);
     tree->Branch("nHit", &nHit);
+
+    // count
+    double ms = 0.001;
+    auto count = 1.0 * ms;
 
     // ch->keVの変換関数を用意する
     TF1 *ch2keV[30];
@@ -71,7 +77,7 @@ int main(int argc, char *argv[])
     while (ifs >> word)
     {
         wordCounter++;
-        int CR1, CR2;
+        int CR1 = 0, CR2 = 0;
 
         // 最初の30個はADC
         if (wordCounter >= 1 && wordCounter <= 30)
@@ -132,6 +138,10 @@ int main(int argc, char *argv[])
 
             // 空のDELTAに中身を入れる
             DELTA = delta(memoSCALER, SCALER);
+            for (int i = 0; i < 4; i++)
+            {
+                ACCUM.at(i) += DELTA.at(i);
+            }
 
             // nHit
             nHit = std::count(CoinReg.begin(), CoinReg.end(), 1);
@@ -161,6 +171,20 @@ int main(int argc, char *argv[])
     }
 
     // 書き出し
+    TParameter<double> realtime, livetime;
+    TParameter<Long64_t> acquried, required;
+    for (int i = 0; i < 4; i++)
+    {
+        std::cout << "ACCUM[" << i << "] = " << ACCUM.at(i) << std::endl;
+    }
+    realtime.SetVal(ACCUM.at(0) * count);
+    livetime.SetVal(ACCUM.at(1) * count);
+    acquried.SetVal(ACCUM.at(2));
+    required.SetVal(ACCUM.at(3));
+    realtime.Write("realtime");
+    livetime.Write("livetime");
+    acquried.Write("acquired");
+    required.Write("required");
     outfile->Write();
     outfile->Close();
 
