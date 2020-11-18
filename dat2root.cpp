@@ -17,6 +17,7 @@
 #include <iterator>
 
 int delta(const int l, const int m, const int L, const int M);
+int deltaPS(const int l, const int m, const int L, const int M);
 std::vector<int> delta(const std::vector<int> &oldSCALER, const std::vector<int> &currentSCALER);
 std::vector<int> CR(int CR1, int CR2);
 
@@ -193,6 +194,19 @@ int main(int argc, char *argv[])
 
 int delta(const int l, const int m, const int L, const int M)
 {
+    bool cleared = (m > M);
+    if (cleared)
+    {
+        return (L - l);
+    }
+    else
+    {
+        return (L - l) + 65536 * (M - m);
+    }
+}
+
+int deltaPS(const int l, const int m, const int L, const int M)
+{
     bool cleared = (m > M); // 上位ビットが減ったときにclearとみなす（たぶんコレで大丈夫のはず）
     if (cleared)
     {
@@ -213,7 +227,9 @@ std::vector<int> delta(const std::vector<int> &oldSCALER, const std::vector<int>
 
     std::vector<int> ret;
 
-    for (int i = 0; i < 5; ++i)
+    // SCALER No.1~4まで。
+    //
+    for (int i = 0; i < 4; ++i)
     {
         int l = oldSCALER.at(2 * i);
         int m = oldSCALER.at(2 * i + 1);
@@ -221,7 +237,13 @@ std::vector<int> delta(const std::vector<int> &oldSCALER, const std::vector<int>
         int M = currentSCALER.at(2 * i + 1);
         ret.push_back(delta(l, m, L, M));
     }
-
+    {
+        int l = oldSCALER.at(2 * 4);
+        int m = oldSCALER.at(2 * 4 + 1);
+        int L = currentSCALER.at(2 * 4);
+        int M = currentSCALER.at(2 * 4 + 1);
+        ret.push_back(deltaPS(l, m, L, M));
+    }
     return ret;
 }
 
