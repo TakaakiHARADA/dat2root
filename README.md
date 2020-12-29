@@ -11,15 +11,17 @@ datfileっていうディレクトリにdatファイルを入れる。
 ## scalerについて
 2020年10月22日現在の設定では、scaler 1~4Chは 1 count = 1 ms, 5chは 1 count = 10 us
 
-1ch : Required
+1ch : (0.001をかけると)Realtime(秒)
 
-2ch : Acquired
+2ch : (0.001をかけると)Deadtime(秒)
 
-3,4ch : 無用
+3ch : Acquired
 
-5ch : 宇宙線μの反同時計測のためのプラシン
+4ch : Required
+
+5ch : 宇宙線μの反同時計測のためのプラシンカウント
 
 ## 追記
 
 ~~LiveTimeCalc.pyっていうLivetimeを出してくれるpythonスクリプトもあるよ！~~
-→dat2rootに前イベントからのscaler増分のブランチを追加したので無用
+→前イベントからのscaler増分のブランチ(DELTA)を追加したので無用
