@@ -1,7 +1,7 @@
-TARGET = dat2root
+TARGET = convertDat2Root
 
 SRCS = $(TARGET).cpp
-OBJS = $(TARGET).o
+OBJS = $(TARGET).o d2r.o Entry.o
 
 ROOTCFLAGS = $(shell root-config --cflags)
 ROOTLIBS = $(shell root-config --libs)
@@ -9,13 +9,13 @@ ROOTGLIBS = $(shell root-config --glibs)
 
 CXXFLAGS = $(ROOTCFLAGS) -Wall -Wextra -fPIC -std=c++14
 CXXLIBS = $(ROOTLIBS) -lSpectrum
-CXX = g++
+CC = g++
 
 $(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(CXXLIBS) $(OBJS) -o $@
+	$(CC) $(CXXFLAGS) $(CXXLIBS) $(OBJS) -o $@
 
 .cpp.o:
-	$(CXX) $(CXXFLAGS) -c $<
+	$(CC) $(CXXFLAGS) -c $<
 
 clean:
 	rm -rf $(TARGET)
