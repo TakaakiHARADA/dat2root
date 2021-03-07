@@ -24,18 +24,6 @@
 const double ms = 0.001;
 const double count = 1.0 * ms;
 
-template <typename T, std::size_t N>
-std::ostream &operator<<(std::ostream &o, const std::array<T, N> &a)
-{
-    o << "{";
-    for (int i = 0; i < (int)a.size(); i++)
-    {
-        o << (i > 0 ? ", " : "") << a.at(i);
-    }
-    o << "}";
-    return o;
-}
-
 int main(int argc, char *argv[])
 {
     if (!properlyUsed(argc, argv))
@@ -106,14 +94,16 @@ int main(int argc, char *argv[])
     }
 
     // 終了処理
-    TParameter<double> realtime, deadtime;
+    TParameter<double> realtime, deadtime, livetime;
     TParameter<Long64_t> acquried, required;
     realtime.SetVal(entry.accum_.at(0) * count);
     deadtime.SetVal(entry.accum_.at(1) * count);
+    realtime.SetVal((entry.accum_.at(0) - entry.accum_.at(1)) * count);
     acquried.SetVal(entry.accum_.at(2));
     required.SetVal(entry.accum_.at(3));
     realtime.Write("realtime");
     deadtime.Write("deadtime");
+    realtime.Write("realtime");
     acquried.Write("acquired");
     required.Write("required");
     outfile->Write();
