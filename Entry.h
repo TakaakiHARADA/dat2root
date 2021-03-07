@@ -4,6 +4,7 @@
 #include <random>
 #include <queue>
 #include <map>
+#include <vector>
 #define NDATA 73
 #define PERIOD 600.0 // 過去PERIOD秒間のclock eventのみがペデスタル変動の監視対象
 
@@ -24,21 +25,21 @@ struct Entry
     // メンバ変数
     // --------------------------------------------
     // 1. 生データ
-    std::array<int, 30> ADC_;    // ADC ch
-    int CR1_, CR2_;              // CoinReg下位ビット・上位ビット
-    std::array<int, 30> TDC_;    // TDC ch
-    std::array<int, 1> TDCHit_;  // 謎のデータ
-    std::array<int, 10> Scaler_; // scaler
+    std::vector<int> ADC_;    // ADC ch
+    int CR1_, CR2_;           // CoinReg下位ビット・上位ビット
+    std::vector<int> TDC_;    // TDC ch
+    std::vector<int> TDCHit_; // 謎のデータ
+    std::vector<int> Scaler_; // scaler
     // --------------------------------------------
     // 2. 生データから計算されるデータ
-    std::array<bool, 30> isHit_;     // Hit判定
-    bool isClock_;                   // クロックジェネレータでゲートがかかったイベントかどうか。
-    int nHit_;                       // HitしたCsIの数
-    std::array<int, 10> prevScaler_; // 1つ前のイベントでのSCALER
-    std::array<int, 5> delta_;       // SCALERの増分, 5ch
-    std::array<double, 30> ADCkeV_;  // ADC ch をエネルギー(keV)に変換したもの
-    std::array<long long, 5> accum_; // DELTAの累積和
-    bool hasPedeShift_;              // ペデスタル変動してるかどうか
+    std::vector<bool> isHit_;      // Hit判定
+    bool isClock_;                 // クロックジェネレータでゲートがかかったイベントかどうか。
+    int nHit_;                     // HitしたCsIの数
+    std::vector<int> prevScaler_;  // 1つ前のイベントでのSCALER
+    std::vector<int> delta_;       // SCALERの増分, 5ch
+    std::vector<double> ADCkeV_;   // ADC ch をエネルギー(keV)に変換したもの
+    std::vector<long long> accum_; // DELTAの累積和
+    bool hasPedeShift_;            // ペデスタル変動してるかどうか
     // --------------------------------------------
     // 3. クロックイベントの平均ADCを管理するキュー関連
     std::queue<double> qTime_;                            // entryの時刻のキュー
@@ -71,6 +72,7 @@ struct Entry
     void update_accum_();
     void update_prevScaler_();
     void update_queue();
+    void clear_all();
     void update_all(const std::array<int, NDATA> &ar);
 
     // ****************************************************************************************
