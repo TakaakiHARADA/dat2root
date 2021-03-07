@@ -2,6 +2,8 @@
 // #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <iostream>
+#include <vector>
 #define PERIOD 600.0 // 過去PERIOD秒間のclock eventのみがペデスタル変動の監視対象
 
 const double ms = 0.001;
@@ -9,15 +11,28 @@ const double count = 1.0 * ms;
 const int ch = 1;
 const int thresh = 3 * ch; // 許容できるペデスタル変動
 
+template <typename T>
+std::ostream &operator<<(std::ostream &o, const std::vector<T> &v)
+{
+    o << "{";
+    for (int i = 0; i < (int)v.size(); i++)
+    {
+        o << (i > 0 ? ", " : "") << v.at(i);
+    }
+    o << "}";
+    return o;
+}
+
 // コンストラクタ
 // 初期化子リストを使ってprevScaler_とaccum_とsumADC_を0埋め、分布の範囲を0.0~1.0に設定、genにデバイス乱数のシードを食わせる。
-Entry::Entry() : prevScaler_(), accum_(), hasPedeShift_(false), sumADC_(), gen(std::random_device{}()), dis(0.0, 1.0)
+Entry::Entry()
+    : ADC_(30, 0), TDC_(30, 0), TDCHit_(1, 0), Scaler_(10, 0), isHit_(30, false), prevScaler_(10, 0), delta_(5, 0), ADCkeV_(30, 0.0), accum_(5, 0), hasPedeShift_(false), sumADC_(), gen(std::random_device{}()), dis(0.0, 1.0)
 {
     std::ifstream ifsSI("SI.dat");
     double slp, intcp;
     for (int i = 0; i < 30; ++i)
     {
-        ifsSI >> slp >> intcp;
+        ifsSI >> intcp >> slp;
         this->slope_.at(i) = slp;
         this->intercept_.at(i) = intcp;
     }
@@ -34,7 +49,9 @@ void Entry::fill(const std::array<int, NDATA> &ar)
     // --------------------------------------------
     for (int iData = 0; iData <= 29; ++iData)
     {
+        // std::cout << "vec len=" << ADC_.size() << std::endl;
         this->ADC_.at(iData - 0) = ar.at(iData); // 最初の30個, #0~29はADC
+        // std::cout << "Pushing back ar[" << iData << "] complete!!" << std::endl;
     }
     // --------------------------------------------
     this->CR1_ = ar.at(30); // #30, 31はCoinReg
@@ -42,6 +59,7 @@ void Entry::fill(const std::array<int, NDATA> &ar)
     // --------------------------------------------
     for (int iData = 32; iData <= 55; ++iData)
     {
+        // std::cout << "vec len=" << TDC_.size() << std::endl;
         this->TDC_.at(iData - 32) = ar.at(iData); // 次の24個, #32~55はTDC
     }
     // --------------------------------------------
@@ -216,6 +234,13 @@ void Entry::update_queue()
         b = b || (diff > thresh);
     }
     this->hasPedeShift_ = b;
+}
+
+void Entry::clear_all()
+{
+    // vectorの中身を全部消す。
+    // vectorは可変長配列なので、これをしないとどんどん長くなっていってしまう。
+    this->ADC_.clear();
 }
 
 // 1エントリーごとにやらないといけない作業を全部やる関数。つまり1エントリーごとにこれを呼ぶ。
